@@ -1,0 +1,59 @@
+{
+  "model_name": "heart-disease-classifier",
+  "version": "20261016071005",
+  "selected_model": "logreg",
+  "feature_variant": "impute_only",
+  "features": [
+    "age",
+    "trestbps",
+    "chol",
+    "thalach",
+    "oldpeak",
+    "sex",
+    "fbs",
+    "exang",
+    "cp",
+    "restecg",
+    "slope"
+  ],
+  "threshold": 0.5,
+  "calibration": "sigmoid",
+  "mlflow_run_id": "2ef26ec6223a49eb946ee82f6c0e41be",
+  "train_rows": 734,
+  "test_rows": 184,
+  "cv_metrics": {
+    "cv_accuracy_mean": 0.7943,
+    "cv_accuracy_std": 0.036,
+    "cv_precision_mean": 0.7962,
+    "cv_precision_std": 0.0404,
+    "cv_recall_mean": 0.8472,
+    "cv_recall_std": 0.0257,
+    "cv_f1_mean": 0.8204,
+    "cv_f1_std": 0.0281,
+    "cv_roc_auc_mean": 0.866,
+    "cv_roc_auc_std": 0.047
+  },
+  "loso_metrics": {
+    "loso_cleveland_accuracy": 0.7621,
+    "loso_cleveland_roc_auc": 0.8636,
+    "loso_hungary_accuracy": 0.7948,
+    "loso_hungary_roc_auc": 0.8912,
+    "loso_switzerland_accuracy": 0.7188,
+    "loso_switzerland_roc_auc": 0.7514,
+    "loso_va_long_beach_accuracy": 0.7267,
+    "loso_va_long_beach_roc_auc": 0.7221,
+    "loso_mean_roc_auc": 0.8071,
+    "loso_mean_accuracy": 0.7506
+  },
+  "test_metrics": {
+    "test_accuracy": 0.788,
+    "test_precision": 0.789,
+    "test_recall": 0.8431,
+    "test_f1": 0.8152,
+    "test_roc_auc": 0.8887,
+    "test_brier": 0.1337,
+    "test_brier_uncalibrated": 0.1333
+  },
+  "python": "3.11.17",
+  "sklearn": "1.5.2"
+}

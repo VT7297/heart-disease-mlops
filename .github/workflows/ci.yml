@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: pip install ruff==0.7.2
+      - name: Ruff
+        run: ruff check src tests data --output-format=github
+
+  test:
+    name: Unit tests (pytest)
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: |
+          mkdir -p ci-reports
+          pytest --junitxml=ci-reports/junit.xml \
+                 --cov=src --cov-report=term-missing --cov-report=xml:ci-reports/coverage.xml \
+                 2>&1 | tee ci-reports/pytest.log
+          exit ${PIPESTATUS[0]}
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: ci-reports/
+
+  train:
+    name: Data validation & model training
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Verify raw data checksum against manifest
+        run: |
+          expected=$(python -c "import json;print(json.load(open('data/raw/manifest.json'))['combined']['sha256'])")
+          actual=$(sha256sum data/raw/heart_disease_combined_raw.csv | cut -d' ' -f1)
+          echo "expected=$expected"
+          echo "actual=$actual"
+          test "$expected" = "$actual" || { echo "::error::Raw data does not match manifest"; exit 1; }
+      - name: Clean data
+        run: python src/data_prep.py
+      - name: Train and evaluate models
+        run: |
+          mkdir -p ci-reports
+          python src/train.py 2>&1 | tee ci-reports/train.log
+          exit ${PIPESTATUS[0]}
+      - name: Model quality gate
+        run: |
+          python - <<'PY'
+          import json, sys
+          m = json.load(open("models/model_metadata.json"))
+          auc = m["test_metrics"]["test_roc_auc"]
+          print(f"test ROC-AUC = {auc:.3f}")
+          if auc < 0.80:
+              print(f"::error::test ROC-AUC {auc:.3f} is below the 0.80 gate")
+              sys.exit(1)
+          PY
+      - name: Comparison plot
+        run: python src/plot_comparison.py
+      - name: Upload model & training artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-and-training-reports
+          path: |
+            models/
+            report/model_comparison.csv
+            report/figures/07_cv_vs_loso.png
+            reports_tmp/
+            ci-reports/
+      - name: Upload MLflow runs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlflow-runs
+          path: mlruns/
+          retention-days: 14

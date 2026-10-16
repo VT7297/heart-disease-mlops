@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+mlruns/
+mlartifacts/
+*.tar
+.DS_Store
+.pytest_cache/
+.ruff_cache/
+reports_tmp/

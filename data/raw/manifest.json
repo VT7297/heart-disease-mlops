@@ -1,0 +1,26 @@
+{
+  "downloaded_at": "2026-10-16T06:06:12.571210+00:00",
+  "files": {
+    "processed.cleveland.data": {
+      "site": "cleveland",
+      "sha256": "a74b7efa387bc9d108d7d0115d831fe9b414b29ae7124f331b622b4efa0427c8"
+    },
+    "processed.hungarian.data": {
+      "site": "hungary",
+      "sha256": "d1ad108f785768cd3d7e82dc522e6f5a61eea93cccfb3a46ee8076f73fc3d796"
+    },
+    "processed.switzerland.data": {
+      "site": "switzerland",
+      "sha256": "834a405ccf5b66ab4056bb77794adc8df0b7125186454c0a1d002d33c6c3b314"
+    },
+    "processed.va.data": {
+      "site": "va_long_beach",
+      "sha256": "e7c93d8d0d2acdadfa4c5e8de768e2191e7f618b952e29623f1f0d5949ff6b8f"
+    }
+  },
+  "combined": {
+    "file": "heart_disease_combined_raw.csv",
+    "rows": 920,
+    "sha256": "ad4f8aab1edf2d43c0edd2bd6c042dd5dfe6911720ffbd286bd2ed49d49ac8d2"
+  }
+}
