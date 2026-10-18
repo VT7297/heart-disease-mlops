@@ -20,7 +20,7 @@ LABELS = {"logreg": "Logistic Regression", "random_forest": "Random Forest",
           "gradient_boosting": "Gradient Boosting"}
 COLORS = {"logreg": "#2E6FAB", "random_forest": "#4C9F70", "gradient_boosting": "#C8553D"}
 # label offsets (points) so nearby labels don't collide; default is up-right
-OFFSETS = {("gradient_boosting", "impute_only"): (-10, 6, "right"),
+OFFSETS = {("gradient_boosting", "impute_only"): (0, -26, "center"),
            ("random_forest", "impute_only"): (0, 12, "center"),
            ("gradient_boosting", "impute_plus_indicators"): (8, -26, "left")}
 

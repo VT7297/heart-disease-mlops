@@ -1,0 +1,59 @@
+digraph G {
+  graph [rankdir=TB, fontname="Inter", fontsize=13, bgcolor="white", pad=0.3, nodesep=0.25, ranksep=0.45, newrank=true, compound=true];
+  node  [shape=box, style="rounded,filled", fontname="Inter", fontsize=11, color="#5B6C8F", fillcolor="#F4F6FA", penwidth=1.2, margin="0.15,0.07"];
+  edge  [color="#5B6C8F", penwidth=1.2, arrowsize=0.7, fontname="Inter", fontsize=9, fontcolor="#44506A"];
+
+  subgraph cluster_data {
+    label="1 · Data"; style="rounded,filled"; fillcolor="#EEF5EF"; color="#4C9F70";
+    uci   [label="UCI Heart Disease\n4 hospital sites, 920 rows"];
+    dl    [label="download_data.py\n+ SHA-256 manifest"];
+    prep  [label="data_prep.py\nclean (no imputation)"];
+    eda   [label="01_eda.ipynb\nEDA figures"];
+    uci -> dl -> prep; prep -> eda [style=dashed];
+  }
+
+  subgraph cluster_train {
+    label="2 · Training & tracking"; style="rounded,filled"; fillcolor="#EEF2F9"; color="#2E6FAB";
+    feat  [label="features.py\nsklearn Pipeline\nimpute · scale · one-hot"];
+    train [label="train.py\nLogReg · RF · GBM\nGridSearchCV\n5-fold + leave-one-site-out"];
+    mlf   [label="MLflow\nparams · metrics · plots\nmodel + signature", shape=cylinder, fillcolor="#FFFFFF"];
+    model [label="model.joblib\n(calibrated)\n+ metadata.json", shape=note, fillcolor="#FFFFFF"];
+    feat -> train; train -> mlf [label="log"]; train -> model;
+  }
+
+  subgraph cluster_ci {
+    label="3 · CI/CD  (GitHub Actions)"; style="rounded,filled"; fillcolor="#FBF3EC"; color="#C8553D";
+    lint  [label="Lint\nruff + k8s schema"];
+    test  [label="Unit tests\npytest (38) + coverage"];
+    ctrain[label="Train + quality gate\nchecksum · AUC ≥ 0.80"];
+    cbuild[label="Container build\n+ smoke test"];
+    lint -> test -> ctrain; ctrain -> cbuild [label="model artifact"];
+  }
+
+  subgraph cluster_k8s {
+    label="4 · Serving  (Minikube, ns heart-mlops)"; style="rounded,filled"; fillcolor="#F3F0F8"; color="#6B5B95";
+    ing   [label="NGINX Ingress\nheart.local\nrate limit"];
+    svc   [label="Service\nClusterIP"];
+    pods  [label="heart-api pods ×2 (HPA 2–4)\nFastAPI · non-root · read-only FS\n/predict /health /ready /metrics"];
+    ing -> svc -> pods;
+  }
+
+  subgraph cluster_mon {
+    label="5 · Monitoring  (ns monitoring)"; style="rounded,filled"; fillcolor="#FFF8E6"; color="#B8860B";
+    prom  [label="Prometheus\npod discovery · 4 alert rules"];
+    graf  [label="Grafana\nservice + model dashboard"];
+    logs  [label="Structured JSON\nrequest logs", shape=note, fillcolor="#FFFFFF"];
+    prom -> graf;
+  }
+
+  client [label="Client · load_test.py\nHTTP JSON requests", shape=oval, fillcolor="#FFFFFF"];
+  repo   [label="GitHub repo\nVT7297/heart-disease-mlops", shape=folder, fillcolor="#FFFFFF"];
+
+  prep -> feat;
+  model -> repo [label="commit"];
+  repo -> lint [label="push"];
+  repo -> ing [label="deploy_minikube.sh\n(build · load · apply -k)", lhead=cluster_k8s];
+  client -> ing;
+  pods -> prom [label="scrape /metrics", dir=back, arrowtail=normal, dir=forward];
+  pods -> logs [style=dashed, label="stdout"];
+}
