@@ -1,0 +1,10 @@
+# Allow-list: only what the serving image needs enters the build context.
+*
+!requirements-serve.txt
+!src/__init__.py
+!src/inference.py
+!api/
+!models/model.joblib
+!models/model_metadata.json
+**/__pycache__
+**/*.pyc

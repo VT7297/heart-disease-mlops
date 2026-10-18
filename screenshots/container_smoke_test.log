@@ -1,0 +1,63 @@
+
+[1m==> Build (podman) -> heart-api:1.0[0m
+[1/2] STEP 1/6: FROM python:3.11-slim AS builder
+[1/2] STEP 2/6: ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+--> Using cache 342c1a2269aaab68283fddf7d0cbd4597b14d2e89c823f3f3fae17a66df5af18
+--> 342c1a2269aa
+[1/2] STEP 3/6: RUN python -m venv /opt/venv
+--> Using cache 0aff2d4a67a326b2ed03eaefe26a7c6ab3cf095c17dbc533c3f1c91febdf278b
+--> 0aff2d4a67a3
+[1/2] STEP 4/6: ENV PATH=/opt/venv/bin:$PATH
+--> Using cache 2aa6080a6b772254617cfb65003d589788ad95b6b2e4db4b51271988df9c637c
+--> 2aa6080a6b77
+[1/2] STEP 5/6: COPY requirements-serve.txt /tmp/requirements-serve.txt
+--> Using cache 17ce78a02dea4775a404ffec3250d827a5b00c732e7421a95b0ab5fa1fd6c808
+--> 17ce78a02dea
+[1/2] STEP 6/6: RUN pip install -r /tmp/requirements-serve.txt
+--> Using cache 84c2ce46aabc873ab55a82ad1355e6ea0b44eb6f1b5fe3fc57ca36b830431acb
+--> 84c2ce46aabc
+[2/2] STEP 1/13: FROM python:3.11-slim AS runtime
+[2/2] STEP 2/13: LABEL org.opencontainers.image.title="heart-disease-api"       org.opencontainers.image.description="UCI heart disease risk classifier (FastAPI)"       org.opencontainers.image.source="https://github.com/VT7297/heart-disease-mlops"
+--> Using cache 721e9b0d4b2fdad578619a1d40742e337a2c2f2513261513b4a686b72183e9c7
+--> 721e9b0d4b2f
+[2/2] STEP 3/13: ENV PATH=/opt/venv/bin:$PATH     PYTHONDONTWRITEBYTECODE=1     PYTHONUNBUFFERED=1     MODEL_PATH=/app/models/model.joblib     LOG_LEVEL=INFO
+--> Using cache 26d21c4bf7c34933a0eaae98cd7400ae5d588c8355e59ae4184044df0c32f130
+--> 26d21c4bf7c3
+[2/2] STEP 4/13: RUN groupadd --system --gid 10001 app  && useradd --system --uid 10001 --gid app --no-create-home --shell /usr/sbin/nologin app
+--> Using cache 31f1d9e7c11a588ae87ab1ec29a31ad24042bd9cfd51f9c1f646bb3241f4d2a4
+--> 31f1d9e7c11a
+[2/2] STEP 5/13: COPY --from=builder /opt/venv /opt/venv
+--> Using cache 5b03c633e399c2e8bb24fc18b4f45f44188c6bac21821c00f938b02ba5426c2a
+--> 5b03c633e399
+[2/2] STEP 6/13: WORKDIR /app
+--> Using cache 7fc7a94d7ab82ed10a441fd119c4609e66de8b3645da99a305c2f94868462ad6
+--> 7fc7a94d7ab8
+[2/2] STEP 7/13: COPY src/__init__.py src/inference.py ./src/
+--> Using cache a7f41c0f08d85b71b1363fe4fb6cd9b6f36c87588bdec362a01aa3629a1f01ec
+--> a7f41c0f08d8
+[2/2] STEP 8/13: COPY api/ ./api/
+--> Using cache b9e89374e07c587b345ee459ab05767c575b8aaca489627e9c539ad271e9ee6f
+--> b9e89374e07c
+[2/2] STEP 9/13: COPY models/model.joblib models/model_metadata.json ./models/
+--> Using cache 153c87aa296bb9529a83718c233dceaf634f72d5de768fd87e3023bc1423b9d5
+--> 153c87aa296b
+[2/2] STEP 10/13: USER 10001:10001
+--> Using cache 1e2138d4f578fdbcefcff9da6f25a431a1090c667c346589500e4c391c5dd070
+--> 1e2138d4f578
+[2/2] STEP 11/13: EXPOSE 8000
+--> Using cache 1dc1fb03563d755347be4d8017e0d18d77753a8c9cc8b38b2d9345fc6b5994a2
+--> 1dc1fb03563d
+[2/2] STEP 12/13: HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=3   CMD ["python", "-c", "import urllib.request,sys; sys.exit(urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2).status != 200)"]
+--> Using cache 75aaf1cc82decdcf23a96df6f74142425f0f2528e90acdc848090bffe03b806a
+--> 75aaf1cc82de
+[2/2] STEP 13/13: CMD ["uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]
+--> Using cache daab63913a4b1f85bb1346d8f9037e8e05d3366a74c440af689e9e9ef45d921a
+[2/2] COMMIT heart-api:1.0
+--> daab63913a4b
+Successfully tagged localhost/heart-api:1.0
+daab63913a4b1f85bb1346d8f9037e8e05d3366a74c440af689e9e9ef45d921a
+REPOSITORY           TAG         IMAGE ID      CREATED        SIZE
+localhost/heart-api  1.0         daab63913a4b  9 minutes ago  589 MB
+
+[1m==> Run container[0m
+Error: cannot listen on the TCP port: listen tcp4 :8000: bind: address already in use

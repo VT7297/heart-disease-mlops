@@ -23,7 +23,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       - run: pip install ruff==0.7.2
       - name: Ruff
-        run: ruff check src tests data --output-format=github
+        run: ruff check src tests data api --output-format=github
 
   test:
     name: Unit tests (pytest)
@@ -108,3 +108,30 @@ jobs:
           name: mlflow-runs
           path: mlruns/
           retention-days: 14
+
+  container:
+    name: Container build & smoke test
+    needs: train
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Use the model trained in this pipeline run
+        run: rm -rf models
+      - uses: actions/download-artifact@v8
+        with:
+          name: model-and-training-reports
+      - name: Model being packaged
+        run: cat models/model_metadata.json
+      - name: Build image, run container, test endpoints
+        env:
+          CONTAINER_ENGINE: docker
+        run: |
+          mkdir -p ci-reports
+          scripts/container_smoke_test.sh "heart-api:${{ github.sha }}" 2>&1 | tee ci-reports/container-smoke.log
+          exit ${PIPESTATUS[0]}
+      - name: Upload smoke-test log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: container-smoke-test
+          path: ci-reports/container-smoke.log
