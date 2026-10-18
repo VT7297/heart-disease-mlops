@@ -52,8 +52,8 @@ spec:
             httpGet: {path: /api/health, port: http}
             periodSeconds: 10
           resources:
-            requests: {cpu: 50m, memory: 128Mi}
-            limits: {cpu: 500m, memory: 384Mi}
+            requests: {cpu: 50m, memory: 256Mi}
+            limits: {cpu: 500m, memory: 768Mi}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:

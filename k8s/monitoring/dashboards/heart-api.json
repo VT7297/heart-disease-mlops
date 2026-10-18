@@ -80,7 +80,7 @@
       "id": 3,
       "type": "stat",
       "title": "Error rate (5xx)",
-      "description": "Share of requests failing with a server error",
+      "description": "Share of requests failing with a server error (0% when none)",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -97,7 +97,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "100 * sum(rate(http_requests_total{job=\"heart-api\", status=~\"5..\"}[5m])) / clamp_min(sum(rate(http_requests_total{job=\"heart-api\"}[5m])), 1e-9)",
+          "expr": "100 * (sum(rate(http_requests_total{job=\"heart-api\", status=~\"5..\"}[5m])) or vector(0)) / clamp_min(sum(rate(http_requests_total{job=\"heart-api\"}[5m])), 1e-9)",
           "legendFormat": "",
           "instant": false,
           "range": true,

@@ -42,9 +42,9 @@ panels = [
           [target(f'sum(rate(http_requests_total{{{JOB}}}[1m]))')], "reqps",
           "All API requests per second across pods", stat_opts),
     panel("stat", "Error rate (5xx)", (5, 1, 5, 4),
-          [target(f'100 * sum(rate(http_requests_total{{{JOB}, status=~"5.."}}[5m])) '
+          [target(f'100 * (sum(rate(http_requests_total{{{JOB}, status=~"5.."}}[5m])) or vector(0)) '
                   f'/ clamp_min(sum(rate(http_requests_total{{{JOB}}}[5m])), 1e-9)')], "percent",
-          "Share of requests failing with a server error", stat_opts,
+          "Share of requests failing with a server error (0% when none)", stat_opts,
           {"thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": None},
                                                          {"color": "red", "value": 5}]}}),
     panel("stat", "Rejected inputs (422)", (10, 1, 5, 4),
