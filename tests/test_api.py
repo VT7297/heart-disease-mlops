@@ -53,6 +53,7 @@ def test_predict_returns_prediction_and_confidence(client):
     assert 0.0 <= body["probability_disease"] <= 1.0
     assert body["model_version"] == "test-1"
     assert r.headers["X-Request-ID"] == body["request_id"]
+    assert r.headers["X-Served-By"]
 
 
 def test_confidence_matches_probability(client):

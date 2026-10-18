@@ -13,6 +13,7 @@ Run locally:  uvicorn api.app:app --reload
 import json
 import logging
 import os
+import socket
 import sys
 import time
 import uuid
@@ -48,6 +49,7 @@ def _setup_logging() -> logging.Logger:
 
 
 logger = _setup_logging()
+HOSTNAME = socket.gethostname()  # pod name in Kubernetes; shows which replica served a request
 
 # --------------------------------------------------------------------------- metrics
 REQUESTS = Counter("http_requests_total", "HTTP requests", ["method", "path", "status"])
@@ -89,6 +91,7 @@ async def observe(request: Request, call_next):
         response = await call_next(request)
         status = response.status_code
         response.headers["X-Request-ID"] = request_id
+        response.headers["X-Served-By"] = HOSTNAME
         return response
     finally:
         elapsed = time.perf_counter() - start
@@ -98,7 +101,7 @@ async def observe(request: Request, call_next):
             REQUESTS.labels(request.method, path, str(status)).inc()
             LATENCY.labels(request.method, path).observe(elapsed)
             logger.info("request", extra={"fields": {
-                "request_id": request_id, "method": request.method, "path": request.url.path,
+                "request_id": request_id, "pod": HOSTNAME, "method": request.method, "path": request.url.path,
                 "status": status, "latency_ms": round(elapsed * 1000, 2),
                 "client": request.client.host if request.client else None}})
 

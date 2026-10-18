@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: heart-api
+  namespace: heart-mlops
+  labels:
+    app.kubernetes.io/name: heart-api
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "16k"   # a patient record is < 1 KB
+    nginx.ingress.kubernetes.io/limit-rps: "20"          # basic per-client rate limit
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: heart.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: heart-api
+                port:
+                  name: http

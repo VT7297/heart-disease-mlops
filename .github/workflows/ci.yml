@@ -24,6 +24,10 @@ jobs:
       - run: pip install ruff==0.7.2
       - name: Ruff
         run: ruff check src tests data api --output-format=github
+      - name: Validate Kubernetes manifests (schema 1.37, strict)
+        run: |
+          pip install kubernetes-validate==1.37.0
+          kubernetes-validate -k 1.37.0 --strict k8s/*.yaml
 
   test:
     name: Unit tests (pytest)
