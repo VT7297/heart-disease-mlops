@@ -27,7 +27,7 @@ jobs:
       - name: Validate Kubernetes manifests (schema 1.37, strict)
         run: |
           pip install kubernetes-validate==1.37.0
-          kubernetes-validate -k 1.37.0 --strict k8s/*.yaml
+          kubernetes-validate -k 1.37.0 --strict k8s/*.yaml k8s/monitoring/*.yaml
 
   test:
     name: Unit tests (pytest)
